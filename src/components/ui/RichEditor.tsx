@@ -15,10 +15,13 @@ function TBtn({ on, label, title, onClick }: { on?: boolean; label: React.ReactN
   );
 }
 
-export function RichEditor({ value, onChange, placeholder }: {
+// [수정 1] Props 타입 정의에 textAlign 및 onTextAlignChange 추가
+export function RichEditor({ value, onChange, placeholder, textAlign, onTextAlignChange }: {
   value: string;
   onChange: (html: string) => void;
   placeholder?: string;
+  textAlign?: 'left' | 'center' | 'right' | 'justify';
+  onTextAlignChange?: (align: 'left' | 'center' | 'right' | 'justify') => void;
 }) {
   const editor = useEditor({
     extensions: [StarterKit, Image],
@@ -59,6 +62,19 @@ export function RichEditor({ value, onChange, placeholder }: {
           onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} />
         <TBtn title="소제목" label="H3" on={editor.isActive('heading', { level: 3 })}
           onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} />
+        
+        {/* [선택사항] 만약 툴바에도 정렬 버튼을 표시하고 싶다면 아래 주석을 해제 */}
+        {/*
+        {onTextAlignChange && (
+          <>
+            <span className="re-sep" />
+            <TBtn title="왼쪽 정렬" label="⇤" on={textAlign === 'left'} onClick={() => onTextAlignChange('left')} />
+            <TBtn title="중앙 정렬" label="↔" on={textAlign === 'center'} onClick={() => onTextAlignChange('center')} />
+            <TBtn title="오른쪽 정렬" label="⇥" on={textAlign === 'right'} onClick={() => onTextAlignChange('right')} />
+          </>
+        )}
+        */}
+
         <span className="re-sep" />
         <TBtn title="글머리 목록" label="•≡" on={editor.isActive('bulletList')}
           onClick={() => editor.chain().focus().toggleBulletList().run()} />
@@ -78,7 +94,8 @@ export function RichEditor({ value, onChange, placeholder }: {
         </span>
       </div>
       {/* 플레이스홀더는 본문 영역 기준으로 — 툴바가 두 줄이 돼도 안 밀림 (v1.9 사용자 발견) */}
-      <div className="re-body">
+      {/* [수정 2] re-body 영역에 textAlign 스타일 적용 */}
+      <div className="re-body" style={{ textAlign }}>
         <EditorContent editor={editor} />
         {placeholder && editor.isEmpty && <div className="re-ph">{placeholder}</div>}
       </div>
