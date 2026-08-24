@@ -56,6 +56,8 @@ export function BackupForm({ initial }: { initial: BackupPost | null }) {
       crop: i === 0 ? initial?.thumbCrop : undefined,
     })));
   const [desc, setDesc] = useState(initial?.desc ?? '');
+  /* [추가] 정렬 상태 추가 (기본값: left) */
+  const [textAlign, setTextAlign] = useState<'left' | 'center' | 'right'>(initial?.textAlign ?? 'left');
   const del = useConfirmDelete();   // 이미지 제거도 되돌릴 수 없어 경고를 거친다
   // 갤러리 말머리 — 환경설정 > 게시판 관리에서 관리 (v2.0)
   const { st: boardSet } = useBoardSettings();
@@ -100,6 +102,7 @@ export function BackupForm({ initial }: { initial: BackupPost | null }) {
         images: imageIds, phList: files.length ? [] : ['cool'],
         thumbCrop: files[0]?.crop, // 대표 이미지 크롭 (6.1)
         desc, category, madeDate: madeDate || undefined,
+        textAlign, // [추가] 정렬값 함께 저장
         date: new Date().toISOString(), author: user.nickname, authorId: user.id,
         visibility,
         fold: foldType === 'none' ? null : { type: foldType, label: foldType === 'custom' ? foldLabel : undefined },
@@ -113,6 +116,7 @@ export function BackupForm({ initial }: { initial: BackupPost | null }) {
         images: imageIds, phList: files.length ? [] : x.phList,
         thumbCrop: files[0]?.crop,
         desc, category, madeDate: madeDate || undefined, visibility,
+        textAlign, // [추가] 수정 시 정렬값 업데이트
         fold: foldType === 'none' ? null : { type: foldType, label: foldType === 'custom' ? foldLabel : undefined },
       } : x));
       toast('저장되었습니다');
@@ -186,7 +190,8 @@ export function BackupForm({ initial }: { initial: BackupPost | null }) {
           />
           <div style={{ marginTop: 14 }}>
             <label className="k-label">설명</label>
-            <RichEditor value={desc} onChange={setDesc} placeholder='작품 설명을 작성하세요 (선택)' />
+            {/* [추가] RichEditor에 정렬 상태와 변경 함수 전달 */}
+            <RichEditor value={desc} onChange={setDesc} textAlign={textAlign} onTextAlignChange={setTextAlign} placeholder='작품 설명을 작성하세요 (선택)' />
           </div>
         </div>
 
