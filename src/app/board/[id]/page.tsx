@@ -149,7 +149,11 @@ export default function BoardDetailPage() {
               </div>
             </div>
           )}
-          <div className="post-body" style={post.fold && !open ? { minHeight: 120, filter: 'blur(6px)' } : undefined}
+          {/* [추가] 저장된 post.textAlign 값을 적용 (기본값: left) */}
+          <div className="post-body" style={{
+            ...(post.fold && !open ? { minHeight: 120, filter: 'blur(6px)' } : undefined),
+            textAlign: post.textAlign ?? 'left',
+          }}
             dangerouslySetInnerHTML={{ __html: html }} />
         </div>
       </div>
