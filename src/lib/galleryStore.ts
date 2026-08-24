@@ -40,6 +40,7 @@ export interface BackupPost {
   authorId: string;
   visibility: Visibility;
   fold: { type: FoldType; label?: string } | null;
+  textAlign?: 'left' | 'center' | 'right' | 'justify';
 }
 
 export const BACKUP_SEED: BackupPost[] = [];
