@@ -27,6 +27,10 @@ function WriteInner() {
   const [title, setTitle] = useState('');
   const [writeMode, setWriteMode] = useState<'editor' | 'md' | 'html'>('editor'); // 에디터가 기본
   const [body, setBody] = useState('');
+
+  /* [추가] 텍스트 정렬 상태 추가 (left | center | right | justify) */
+  const [textAlign, setTextAlign] = useState<'left' | 'center' | 'right' | 'justify'>('left');
+
   const [category, setCategory] = useState('');
   // 말머리 기본값 — 게시판별 목록(5.2) 로드 후 첫 항목
   React.useEffect(() => { if (!category && board.cats[0]) setCategory(board.cats[0].label); // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -59,6 +63,10 @@ function WriteInner() {
     if (!p) return;
     hydrated.current = true;
     setTitle(p.title); setBody(p.body);
+    
+    /* [추가] 기존 게시글에 정렬 값이 있다면 로드 (Post 타입 정의에 textAlign 확장 필요) */
+    if ((p as any).textAlign) setTextAlign((p as any).textAlign);
+
     // 에디터로 쓴 글은 에디터로 다시 연다 — 예전에는 무조건 HTML 소스가 떠서
     // 에디터로 쓴 글을 수정하면 갑자기 태그가 보였다 (authored 없는 옛 글은 지금까지대로 HTML)
     setWriteMode(p.mode === 'md' ? 'md' : (p.authored === 'editor' ? 'editor' : 'html'));
@@ -93,12 +101,14 @@ function WriteInner() {
         secret, notice: isAdmin ? notice : p.notice,
         fold: foldType === 'none' ? null : { type: foldType, label: foldType === 'custom' ? foldLabel : undefined },
         thumbSrc, thumbCrop,
-      } : p)));
+        /* [추가] 게시글 수정 저장 시 정렬 값 포함 */
+        textAlign,
+      } as any : p)));
       toast('수정되었습니다');
       router.push(`/board/${editing.id}`);
       return;
     }
-    const p: Post = {
+    const p: Post & { textAlign?: string } = {
       id: newId(), title: title.trim(), body,
       mode: writeMode === 'md' ? 'md' : 'html', category,
       author: user.nickname, authorId: user.id, date: new Date().toISOString(),
@@ -107,8 +117,10 @@ function WriteInner() {
       comments: [],
       boardId: board.id,   // 소속 게시판 (5.2 다중 게시판)
       thumbSrc, thumbCrop,
+      /* [추가] 신규 게시글 등록 시 정렬 값 포함 */
+      textAlign,
     };
-    setPosts([p, ...posts]);
+    setPosts([p as Post, ...posts]);
     toast('등록되었습니다');
     router.push(`/board/${p.id}`);
   };
@@ -131,18 +143,34 @@ function WriteInner() {
               <button className={writeMode === 'html' ? 'on' : ''} onClick={() => setWriteMode('html')}>HTML</button>
             </div>
           </div>
+
+          {/* [추가] 정렬 선택 버튼 툴바 영역 */}
+          <div className="form-row" style={{ marginTop: 10, marginBottom: 10 }}>
+            <label className="k-label" style={{ width: 60 }}>정렬</label>
+            <div className="mini-seg">
+              <button className={textAlign === 'left' ? 'on' : ''} onClick={() => setTextAlign('left')}>왼쪽</button>
+              <button className={textAlign === 'center' ? 'on' : ''} onClick={() => setTextAlign('center')}>중앙</button>
+              <button className={textAlign === 'right' ? 'on' : ''} onClick={() => setTextAlign('right')}>오른쪽</button>
+              <button className={textAlign === 'justify' ? 'on' : ''} onClick={() => setTextAlign('justify')}>양쪽</button>
+            </div>
+          </div>
+
           {writeMode === 'editor' ? (
-            <RichEditor value={body} onChange={setBody} placeholder='내용을 작성하세요 — 이미지 삽입 가능 (스크립트 불허 6.3)' />
+            /* [수정] RichEditor 영역을 선택된 정렬 스타일로 감싸서 표시 */
+            <div style={{ textAlign }}>
+              <RichEditor value={body} onChange={setBody} placeholder='내용을 작성하세요 — 이미지 삽입 가능 (스크립트 불허 6.3)' />
+            </div>
           ) : (
             <>
               <KTextarea
-                style={{ minHeight: 220, fontFamily: writeMode === 'html' ? 'ui-monospace, Consolas, monospace' : undefined }}
+                style={{ minHeight: 220, fontFamily: writeMode === 'html' ? 'ui-monospace, Consolas, monospace' : undefined, textAlign }} /* [수정] 입력창 정렬 반영 */
                 placeholder={writeMode === 'md' ? '마크다운으로 작성...' : '<div>HTML 코드를 작성/붙여넣기...</div>'}
                 value={body} onChange={e => setBody(e.target.value)}
               />
               <div className="preview-box" style={{ marginTop: 14 }}>
                 <div className="pv-label">PREVIEW — 실시간 미리보기</div>
-                <div className="post-body" dangerouslySetInnerHTML={{ __html: preview }} />
+                {/* [수정] 미리보기 영역에 정렬 스타일 적용 */}
+                <div className="post-body" style={{ textAlign }} dangerouslySetInnerHTML={{ __html: preview }} />
               </div>
             </>
           )}
