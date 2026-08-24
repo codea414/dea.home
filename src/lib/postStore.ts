@@ -38,6 +38,7 @@ export interface Post {
   boardId?: string;      // 소속 게시판 (5.2 다중 게시판 — 없으면 기본 'main')
   thumbSrc?: string;     // 티켓 스킨 대표 이미지 — 본문에 삽입한 이미지 중 선택 (v1.9)
   thumbCrop?: { x: number; y: number; scale: number };  // 대표 썸네일 크롭 (16:9)
+  textAlign?: 'left' | 'center' | 'right'; // 정렬
 }
 
 export interface GuestEntry {
