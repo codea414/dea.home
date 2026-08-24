@@ -57,7 +57,7 @@ export function BackupForm({ initial }: { initial: BackupPost | null }) {
     })));
   const [desc, setDesc] = useState(initial?.desc ?? '');
   /* [추가] 정렬 상태 추가 (기본값: left) */
-  const [textAlign, setTextAlign] = useState<'left' | 'center' | 'right'>(initial?.textAlign ?? 'left');
+  const [textAlign, setTextAlign] = useState<'left' | 'center' | 'right' | 'justify'>(initial?.textAlign ?? 'left');
   const del = useConfirmDelete();   // 이미지 제거도 되돌릴 수 없어 경고를 거친다
   // 갤러리 말머리 — 환경설정 > 게시판 관리에서 관리 (v2.0)
   const { st: boardSet } = useBoardSettings();
